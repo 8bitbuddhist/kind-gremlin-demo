@@ -5,11 +5,15 @@ source .env
 kind delete cluster --name ${KIND_CLUSTER_NAME}
 kind create cluster --name ${KIND_CLUSTER_NAME} --config config.yaml
 
+# Detect Gremlin certificate files
+GREMLIN_CERT_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*cert.pem | head -n 1)
+GREMLIN_KEY_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*key.pem | head -n 1)
+
 # Create a Gremlin namespace and secret
 kubectl create ns gremlin
 kubectl -n gremlin create secret generic gremlin-team-cert \
-	--from-file=${GREMLIN_CERT_PATH}/gremlin.cert \
-	--from-file=${GREMLIN_CERT_PATH}/gremlin.key \
+	--from-file=${GREMLIN_CERT_FILE} \
+	--from-file=${GREMLIN_KEY_FILE} \
 	--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
 	--from-literal=GREMLIN_CLUSTER_ID=${GREMLIN_CLUSTER_ID}
 
