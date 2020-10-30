@@ -12,8 +12,8 @@ GREMLIN_KEY_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*key.pem | head -n 1)
 # Create a Gremlin namespace and secret
 kubectl create ns gremlin
 kubectl -n gremlin create secret generic gremlin-team-cert \
-	--from-file=${GREMLIN_CERT_FILE} \
-	--from-file=${GREMLIN_KEY_FILE} \
+	--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
+	--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
 	--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
 	--from-literal=GREMLIN_CLUSTER_ID=${GREMLIN_CLUSTER_ID}
 
@@ -30,5 +30,5 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/mast
 kubectl wait --for=condition=available deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
-kubectl creates ns microservices-demo
+kubectl create ns microservices-demo
 kubectl apply -f microservices-demo/release/kubernetes-manifests.yaml -n microservices-demo
