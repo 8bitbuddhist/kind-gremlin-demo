@@ -31,4 +31,5 @@ kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
 kubectl create ns microservices-demo
-kubectl apply -f microservices-demo/release/kubernetes-manifests.yaml -n microservices-demo
+kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml -n microservices-demo
+kubectl apply -f microservices-demo-ingress.yaml -n microservices-demo

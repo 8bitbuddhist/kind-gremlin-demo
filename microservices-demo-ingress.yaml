@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: frontend-external
+spec:
+  rules:
+  - http:
+      paths:
+        - path: /
+          backend:
+            serviceName: frontend-external
+            servicePort: 80
