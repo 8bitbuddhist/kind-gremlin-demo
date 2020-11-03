@@ -25,9 +25,9 @@ helm install gremlin gremlin/gremlin \
 	--set gremlin.hostPID=true \
 	--set gremlin.container.driver=containerd-runc
 
-# Deploy an Nginx Ingress controller
+# Deploy an Nginx Ingress controller and wait for it to rollout
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
-kubectl wait --for=condition=available deployment/ingress-nginx-controller -n ingress-nginx
+kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
 kubectl create ns microservices-demo
