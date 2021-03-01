@@ -18,6 +18,7 @@ Note that this cluster is meant for testing Kubernetes and Gremlin, not for runn
 	1. `GREMLIN_CERT_PATH`: the path containing your [Gremlin certificates](https://www.gremlin.com/docs/infrastructure-layer/authentication/#signature-based-authentication).
 	2. `GREMLIN_CLUSTER_ID`: the name of your cluster as it will appear in the Gremlin web app.
 	3. `GREMLIN_TEAM_ID`: your [Gremlin team ID](https://app.gremlin.com/settings/teams)
+	4. `ENV_PLATFORM`: the visual style to use. Can be `aws`, `onprem`, `azure`, or blank for Google Cloud.
 3. Optionally customize your KinD cluster by editing `config.yaml`.
 4. Run `run.sh <cluster name>` to create the cluster.
 	1. **Note:** If the cluster already exists, it will be deleted.
