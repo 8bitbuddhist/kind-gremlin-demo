@@ -3,11 +3,12 @@ NO_GREMLIN=0
 NO_APP=0
 
 function usage() {
-	echo "Usage: run.sh [ --no-gremlin ] [--no-app] cluster-name"
+	echo "Usage: run.sh [ --no-gremlin ] [--no-app] [cluster-name]"
 	echo "Options:"
 	echo "	-h | --help	Show this help screen."
 	echo "	--no-app 	Don't deploy the Online Boutique demo application."
 	echo "	--no-gremlin	Don't deploy Gremlin."
+	echo "  cluster-name	The name of the cluster to create."
 	exit 2
 }
 
@@ -33,12 +34,12 @@ done
 
 source .env
 
-if [ -n "$1"]; then
+if ! [ -z "$1"]; then
 	# Overwrite CLUSTER_NAME set in .env
 	CLUSTER_NAME=$1
 fi
 
-if [ -z "${CLUSTER_NAME}" ]; then
+if [ -z "$CLUSTER_NAME" ]; then
 	echo "Cluster name required."
 	usage
 	exit
