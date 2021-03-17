@@ -31,19 +31,22 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-if [ -z "$1" ]; then
+source .env
+
+if [ -n "$1"]; then
+	# Overwrite CLUSTER_NAME set in .env
+	CLUSTER_NAME=$1
+fi
+
+if [ -z "${CLUSTER_NAME}" ]; then
 	echo "Cluster name required."
 	usage
 	exit
-else
-	KIND_CLUSTER_NAME=$1
 fi
 
-source .env
-
 # Create the kind cluster
-kind delete cluster --name ${KIND_CLUSTER_NAME}
-kind create cluster --name ${KIND_CLUSTER_NAME} --config config.yaml
+kind delete cluster --name ${CLUSTER_NAME}
+kind create cluster --name ${CLUSTER_NAME} --config config.yaml
 
 if [ $NO_GREMLIN -eq 0 ]; then
 	# Detect Gremlin certificate files
@@ -52,7 +55,7 @@ if [ $NO_GREMLIN -eq 0 ]; then
 
 	# Create a Gremlin namespace and secret
 	kubectl create ns gremlin
-	kubectl -n gremlin create secret generic gremlin-team-cert \
+	kubectl create secret generic -n gremlin gremlin-team-cert \
 		--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
 		--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
 		--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
@@ -64,7 +67,8 @@ if [ $NO_GREMLIN -eq 0 ]; then
 		--namespace gremlin \
 		--set gremlin.secret.name=gremlin-team-cert \
 		--set gremlin.hostPID=true \
-		--set gremlin.container.driver=containerd-runc
+		--set gremlin.container.driver=containerd-runc \
+		--set gremlin.client.tags="cluster=${CLUSTER_NAME}"
 fi
 
 # Deploy an Nginx Ingress controller and wait for it to rollout
