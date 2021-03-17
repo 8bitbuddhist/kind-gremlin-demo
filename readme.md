@@ -16,11 +16,11 @@ Note that this cluster is meant for testing Kubernetes and Gremlin, not for runn
 	1. **Note**: You'll need to add your user to the `docker` group to use the run script.
 2. If you want to deploy Gremlin, fill in the `.env` file:
 	1. `GREMLIN_CERT_PATH`: the path containing your [Gremlin certificates](https://www.gremlin.com/docs/infrastructure-layer/authentication/#signature-based-authentication).
-	2. `GREMLIN_CLUSTER_ID`: the name of your cluster as it will appear in the Gremlin web app.
-	3. `GREMLIN_TEAM_ID`: your [Gremlin team ID](https://app.gremlin.com/settings/teams)
+	2. `GREMLIN_TEAM_ID`: your [Gremlin team ID](https://app.gremlin.com/settings/teams)
+	3. `CLUSTER_NAME`: the name of your cluster. This is how it will appear in Gremlin and Kind.
 	4. `ENV_PLATFORM`: the visual style to use. Can be `aws`, `onprem`, `azure`, or blank for Google Cloud.
 3. Optionally customize your KinD cluster by editing `config.yaml`.
-4. Run `run.sh <cluster name>` to create the cluster.
+4. Run `run.sh` to create the cluster.
 	1. **Note:** If the cluster already exists, it will be deleted.
 	2. You can choose whether to deploy Gremlin or the demo application by adding `--no-gremlin` or `-no-app` as arguments.
 5. Access the application using http://localhost.
