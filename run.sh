@@ -60,7 +60,7 @@ if [ $NO_GREMLIN -eq 0 ]; then
 		--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
 		--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
 		--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
-		--from-literal=GREMLIN_CLUSTER_ID=${GREMLIN_CLUSTER_ID}
+		--from-literal=GREMLIN_CLUSTER_ID=${CLUSTER_NAME}
 
 	# Deploy Gremlin
 	helm repo add gremlin https://helm.gremlin.com
