@@ -91,4 +91,7 @@ if [ $NO_APP -eq 0 ]; then
 	kubectl create ns microservices-demo
 	kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml -n microservices-demo
 	kubectl apply -f microservices-demo-ingress.yaml -n microservices-demo
+
+	# Disable tracing in recommendation service
+  kubectl set env deployment/recommendationservice -n microservices-demo DISABLE_TRACING=1 DISABLE_PROFILER=1 DISABLE_DEBUGGER=1
 fi
