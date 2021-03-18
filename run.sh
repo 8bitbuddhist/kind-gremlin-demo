@@ -68,8 +68,18 @@ if [ $NO_GREMLIN -eq 0 ]; then
 		--namespace gremlin \
 		--set gremlin.secret.name=gremlin-team-cert \
 		--set gremlin.hostPID=true \
+		--set gremlin.collect.processes=true \
+		--set gremlin.apparmor=unconfined \
 		--set gremlin.container.driver=containerd-runc \
 		--set gremlin.client.tags="cluster=${CLUSTER_NAME}"
+
+	# AppArmor workaround (shouldn't be necesary, but just in case)
+	kubectl patch daemonset -n gremlin gremlin -p "{
+  \"spec\":{
+    \"template\":{
+      \"metadata\":{
+        \"annotations\":{
+          \"container.apparmor.security.beta.kubernetes.io/gremlin\":\"unconfined\"}}}}}"
 fi
 
 # Deploy an Nginx Ingress controller and wait for it to rollout
