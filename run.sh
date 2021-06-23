@@ -1,6 +1,7 @@
 #!/bin/bash
 NO_GREMLIN=0
 NO_APP=0
+APP_VERSION=v0.2.1	# Online Boutique version number
 
 function usage() {
 	echo "Usage: run.sh [ --no-gremlin ] [--no-app] [cluster-name]"
@@ -89,7 +90,7 @@ kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 # Deploy the demo application
 if [ $NO_APP -eq 0 ]; then
 	kubectl create ns microservices-demo
-	kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml -n microservices-demo
+	kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/$APP_VERSION/release/kubernetes-manifests.yaml -n microservices-demo
 	kubectl apply -f microservices-demo-ingress.yaml -n microservices-demo
 
 	# Disable tracing in recommendation service
