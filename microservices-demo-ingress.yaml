@@ -7,6 +7,9 @@ spec:
   - http:
       paths:
         - path: /
+          pathType: Prefix
           backend:
-            serviceName: frontend-external
-            servicePort: 80
+            service:
+              name: frontend-external
+              port:
+                number: 80
