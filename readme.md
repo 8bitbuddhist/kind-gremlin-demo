@@ -22,4 +22,5 @@ Note that this cluster is meant for testing Kubernetes and Gremlin, not for runn
 4. Run `run.sh` to create the cluster.
 	1. **Note:** If the cluster already exists, it will be deleted. On Linux, you'll need to run the script using `sudo` or add your user to the `docker` group.
 	2. You can choose not to deploy Gremlin or the demo application with the arguments `--no-gremlin` and `-no-app`.
+	3. If you want to redeploy Gremlin and Online Boutique only without rebuilding the cluster, add the argument `--no-cluster`.
 5. Access the application using http://127.0.0.1.

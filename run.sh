@@ -1,13 +1,15 @@
 #!/bin/bash
+NO_CLUSTER=0
 NO_GREMLIN=0
 NO_APP=0
 APP_VERSION=v0.2.1	# Online Boutique version number
 
 function usage() {
-	echo "Usage: run.sh [ --no-gremlin ] [--no-app] [cluster-name]"
+	echo "Usage: run.sh [ --no-cluster ] [ --no-gremlin ] [--no-app] [cluster-name]"
 	echo "Options:"
 	echo "	-h | --help	Show this help screen."
-	echo "	--no-app 	Don't deploy the Online Boutique demo application."
+	echo "	--no-app	Don't deploy the Online Boutique demo application."
+	echo "  --no-cluster	Don't rebuild the Kind cluster."
 	echo "	--no-gremlin	Don't deploy Gremlin."
 	echo "  cluster-name	The name of the cluster to create."
 	exit 2
@@ -15,6 +17,10 @@ function usage() {
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+	  --no-cluster)
+		  NO_CLUSTER=1
+			shift
+			;;
 		--no-gremlin)
 			NO_GREMLIN=1
 			shift
@@ -46,9 +52,11 @@ if [ -z "$CLUSTER_NAME" ]; then
 	exit
 fi
 
-# Create the kind cluster
-kind delete cluster --name ${CLUSTER_NAME}
-kind create cluster --name ${CLUSTER_NAME} --config config.yaml
+if [ $NO_CLUSTER -eq 0 ]; then
+	# Create the kind cluster
+	kind delete cluster --name ${CLUSTER_NAME}
+	kind create cluster --name ${CLUSTER_NAME} --config config.yaml
+fi
 
 if [ $NO_GREMLIN -eq 0 ]; then
 	# Detect Gremlin certificate files
@@ -56,6 +64,7 @@ if [ $NO_GREMLIN -eq 0 ]; then
 	GREMLIN_KEY_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*key.pem | head -n 1)
 
 	# Create a Gremlin namespace and secret
+	kubectl delete ns gremlin
 	kubectl create ns gremlin
 	kubectl create secret generic -n gremlin gremlin-team-cert \
 		--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
