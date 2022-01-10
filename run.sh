@@ -119,7 +119,7 @@ if [ $NO_APP -eq 0 ]; then
 	if [ $USE_SKAFFOLD -eq 0 ]; then
 		skaffold run --namespace online-boutique
 	else
-		kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/$APP_VERSION/release/kubernetes-manifests.yaml -n online-boutique
+		kubectl apply -f microservices-demo/release/kubernetes-manifests.yaml -n online-boutique
 		kubectl apply -f online-boutique-ingress.yaml -n online-boutique
 	fi
 fi

@@ -12,6 +12,8 @@ Note that this cluster is meant for testing Kubernetes and Gremlin, not for runn
 
 ## Getting Started
 
+First, run `git submodule update --init --recursive` to download the Online Boutique/microservices-demo project.
+
 1. Install [Docker](https://docs.docker.com/install/), [Kubernetes in Docker (KinD)](https://kind.sigs.k8s.io/), [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/), and [Helm](https://helm.sh/docs/intro/install/)
 2. Fill in the `.env` file:
 	1. `GREMLIN_CERT_PATH`: (Optional) the path containing your [Gremlin certificates](https://www.gremlin.com/docs/infrastructure-layer/authentication/#signature-based-authentication).
