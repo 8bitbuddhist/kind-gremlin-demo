@@ -2,15 +2,17 @@
 NO_CLUSTER=0
 NO_GREMLIN=0
 NO_APP=0
-APP_VERSION=v0.2.1	# Online Boutique version number
+APP_VERSION=v0.3.5	# Online Boutique version number
+USE_SKAFFOLD=0
 
 function usage() {
-	echo "Usage: run.sh [ --no-cluster ] [ --no-gremlin ] [--no-app] [cluster-name]"
+	echo "Usage: run.sh [ --no-cluster ] [ --no-gremlin ] [--no-app] [--skaffold] [cluster-name]"
 	echo "Options:"
 	echo "	-h | --help	Show this help screen."
 	echo "	--no-app	Don't deploy the Online Boutique demo application."
 	echo "  --no-cluster	Don't rebuild the Kind cluster."
 	echo "	--no-gremlin	Don't deploy Gremlin."
+	echo "  --skaffold		Use Skaffold to deploy Online Boutique instead of 'kubectl apply'"
 	echo "  cluster-name	The name of the cluster to create."
 	exit 2
 }
@@ -27,6 +29,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--no-app)
 			NO_APP=1
+			shift
+			;;
+	  --skaffold)
+		  USE_SKAFFOLD=1
 			shift
 			;;
 		--help|-h)
@@ -49,6 +55,17 @@ fi
 if [ -z "$CLUSTER_NAME" ]; then
 	echo "Cluster name required."
 	usage
+	exit
+fi
+
+# Make sure kind and kubectl are installed
+if ! command -v kind &> /dev/null; then
+	echo "Kind not installed. See https://kind.sigs.k8s.io/."
+	exit
+fi
+
+if ! command -v kubectl &> /dev/null; then
+	echo "kubectl not installed. See https://kubernetes.io/docs/tasks/tools/."
 	exit
 fi
 
@@ -98,10 +115,11 @@ kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
 if [ $NO_APP -eq 0 ]; then
-	kubectl create ns microservices-demo
-	kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/$APP_VERSION/release/kubernetes-manifests.yaml -n microservices-demo
-	kubectl apply -f microservices-demo-ingress.yaml -n microservices-demo
-
-	# Disable tracing in recommendation service
-  kubectl set env deployment/recommendationservice -n microservices-demo DISABLE_TRACING=1 DISABLE_PROFILER=1 DISABLE_DEBUGGER=1
+	kubectl create ns online-boutique
+	if [ $USE_SKAFFOLD -eq 0 ]; then
+		skaffold run --namespace online-boutique
+	else
+		kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/$APP_VERSION/release/kubernetes-manifests.yaml -n online-boutique
+		kubectl apply -f online-boutique-ingress.yaml -n online-boutique
+	fi
 fi

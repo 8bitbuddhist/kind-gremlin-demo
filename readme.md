@@ -24,3 +24,7 @@ Note that this cluster is meant for testing Kubernetes and Gremlin, not for runn
 	2. You can choose not to deploy Gremlin or the demo application with the arguments `--no-gremlin` and `-no-app`.
 	3. If you want to redeploy Gremlin and Online Boutique only without rebuilding the cluster, add the argument `--no-cluster`.
 5. Access the application using http://127.0.0.1.
+
+## Troubleshooting
+
+When running Online Boutique v0.3.5 locally, the frontend might time out while trying to get info about the cluster name and zone. This adds a ton of lag to the site. If this happens, you'll need to clone the GitHub repository, edit the [frontend handler](https://github.com/GoogleCloudPlatform/microservices-demo/blob/v0.3.5/src/frontend/handlers.go), remove all references to metaServerClient, remove lines [531](https://github.com/GoogleCloudPlatform/microservices-demo/blob/v0.3.5/src/frontend/handlers.go#L531) and [536](https://github.com/GoogleCloudPlatform/microservices-demo/blob/v0.3.5/src/frontend/handlers.go#L536), then enter a string for `podCluster` and `podZone`. Finally, run `run.sh --skaffold` to build the project.
