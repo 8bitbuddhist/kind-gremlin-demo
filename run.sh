@@ -80,33 +80,37 @@ if [ $NO_GREMLIN -eq 0 ]; then
 	GREMLIN_CERT_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*cert.pem | head -n 1)
 	GREMLIN_KEY_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*key.pem | head -n 1)
 
-	# Create a Gremlin namespace and secret
-	kubectl delete ns gremlin
-	kubectl create ns gremlin
-	kubectl create secret generic -n gremlin gremlin-team-cert \
-		--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
-		--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
-		--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
-		--from-literal=GREMLIN_CLUSTER_ID=${CLUSTER_NAME}
+	if [ -z "$GREMLIN_CERT_FILE"] || [ -z "$GREMLIN_KEY_FILE" ]; then
+		echo "Could not find Gremlin credentials. Skipping Gremlin setup."
+	else
+		# Create a Gremlin namespace and secret
+		kubectl delete ns gremlin
+		kubectl create ns gremlin
+		kubectl create secret generic -n gremlin gremlin-team-cert \
+			--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
+			--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
+			--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
+			--from-literal=GREMLIN_CLUSTER_ID=${CLUSTER_NAME}
 
-	# Deploy Gremlin
-	helm repo add gremlin https://helm.gremlin.com
-	helm install gremlin gremlin/gremlin \
-		--namespace gremlin \
-		--set gremlin.secret.name=gremlin-team-cert \
-		--set gremlin.hostPID=true \
-		--set gremlin.collect.processes=true \
-		--set gremlin.apparmor=unconfined \
-		--set gremlin.container.driver=containerd-runc \
-		--set gremlin.client.tags="cluster=${CLUSTER_NAME}"
+		# Deploy Gremlin
+		helm repo add gremlin https://helm.gremlin.com
+		helm install gremlin gremlin/gremlin \
+			--namespace gremlin \
+			--set gremlin.secret.name=gremlin-team-cert \
+			--set gremlin.hostPID=true \
+			--set gremlin.collect.processes=true \
+			--set gremlin.apparmor=unconfined \
+			--set gremlin.container.driver=containerd-runc \
+			--set gremlin.client.tags="cluster=${CLUSTER_NAME}"
 
-	# AppArmor workaround (shouldn't be necesary, but just in case)
-	kubectl patch daemonset -n gremlin gremlin -p "{
-  \"spec\":{
-    \"template\":{
-      \"metadata\":{
-        \"annotations\":{
-          \"container.apparmor.security.beta.kubernetes.io/gremlin\":\"unconfined\"}}}}}"
+		# AppArmor workaround (shouldn't be necesary, but just in case)
+		kubectl patch daemonset -n gremlin gremlin -p "{
+		\"spec\":{
+			\"template\":{
+				\"metadata\":{
+					\"annotations\":{
+						\"container.apparmor.security.beta.kubernetes.io/gremlin\":\"unconfined\"}}}}}"
+	fi
 fi
 
 # Deploy an Nginx Ingress controller and wait for it to rollout
@@ -120,6 +124,6 @@ if [ $NO_APP -eq 0 ]; then
 		skaffold run --namespace online-boutique
 	else
 		kubectl apply -f microservices-demo/release/kubernetes-manifests.yaml -n online-boutique
-		kubectl apply -f online-boutique-ingress.yaml -n online-boutique
 	fi
+	kubectl apply -f online-boutique-ingress.yaml -n online-boutique
 fi
