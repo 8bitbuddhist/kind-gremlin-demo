@@ -1,4 +1,4 @@
-[submodule "microservices-demo"]
-	path = microservices-demo
-	url = https://github.com/GoogleCloudPlatform/microservices-demo/
+[submodule "gremlin-boutique"]
+	path = gremlin-boutique
+	url = https://github.com/8bitbuddhist/microservices-demo.git
 	branch = release/v0.3.5

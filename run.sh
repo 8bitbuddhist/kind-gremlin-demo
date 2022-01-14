@@ -80,7 +80,7 @@ if [ $NO_GREMLIN -eq 0 ]; then
 	GREMLIN_CERT_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*cert.pem | head -n 1)
 	GREMLIN_KEY_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*key.pem | head -n 1)
 
-	if [ -z "$GREMLIN_CERT_FILE"] || [ -z "$GREMLIN_KEY_FILE" ]; then
+	if [ -z "$GREMLIN_CERT_FILE" ] || [ -z "$GREMLIN_KEY_FILE" ]; then
 		echo "Could not find Gremlin credentials. Skipping Gremlin setup."
 	else
 		# Create a Gremlin namespace and secret
@@ -119,11 +119,13 @@ kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
 if [ $NO_APP -eq 0 ]; then
-	kubectl create ns online-boutique
-	if [ $USE_SKAFFOLD -eq 0 ]; then
-		skaffold run --namespace online-boutique
+	kubectl create ns gremlin-boutique
+	if [ $USE_SKAFFOLD -eq 1 ]; then
+		cd gremlin-boutique
+		skaffold run --namespace gremlin-boutique
 	else
-		kubectl apply -f microservices-demo/release/kubernetes-manifests.yaml -n online-boutique
+		kubectl apply -f gremlin-boutique/release/kubernetes-manifests.yaml -n gremlin-boutique
 	fi
-	kubectl apply -f online-boutique-ingress.yaml -n online-boutique
+	cd ..
+	kubectl apply -f gremlin-boutique-ingress.yaml -n gremlin-boutique
 fi
