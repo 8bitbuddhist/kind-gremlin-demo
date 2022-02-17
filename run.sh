@@ -123,9 +123,9 @@ if [ $NO_APP -eq 0 ]; then
 	if [ $USE_SKAFFOLD -eq 1 ]; then
 		cd gremlin-boutique
 		skaffold run --namespace gremlin-boutique
+		cd ..
 	else
 		kubectl apply -f gremlin-boutique/release/kubernetes-manifests.yaml -n gremlin-boutique
 	fi
-	cd ..
 	kubectl apply -f gremlin-boutique-ingress.yaml -n gremlin-boutique
 fi
