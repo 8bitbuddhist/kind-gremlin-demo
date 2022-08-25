@@ -4,15 +4,17 @@ NO_GREMLIN=0
 NO_APP=0
 APP_VERSION=v0.3.5	# Online Boutique version number
 USE_SKAFFOLD=0
+USE_STAGING=0		# Deploy to Gremlin staging instead of prod
 
 function usage() {
-	echo "Usage: run.sh [ --no-cluster ] [ --no-gremlin ] [--no-app] [--skaffold] [cluster-name]"
+	echo "Usage: run.sh [ --no-cluster ] [ --no-gremlin ] [--no-app] [--skaffold] [--staging] [cluster-name]"
 	echo "Options:"
 	echo "	-h | --help	Show this help screen."
-	echo "	--no-app	Don't deploy the Online Boutique demo application."
+	echo "	--no-app			Don't deploy the Online Boutique demo application."
 	echo "  --no-cluster	Don't rebuild the Kind cluster."
 	echo "	--no-gremlin	Don't deploy Gremlin."
 	echo "  --skaffold		Use Skaffold to deploy Online Boutique instead of 'kubectl apply'"
+	echo "  --staging			Deploy to Gremlin Staging instead of Gremlin Prod"
 	echo "  cluster-name	The name of the cluster to create."
 	exit 2
 }
@@ -33,6 +35,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 	  --skaffold)
 		  USE_SKAFFOLD=1
+			shift
+			;;
+		--staging)
+			USE_STAGING=1
 			shift
 			;;
 		--help|-h)
@@ -94,7 +100,9 @@ if [ $NO_GREMLIN -eq 0 ]; then
 
 		# Deploy Gremlin
 		helm repo add gremlin https://helm.gremlin.com
-		helm install gremlin gremlin/gremlin \
+
+		if [ $USE_STAGING -eq 0 ]; then
+			helm install gremlin gremlin/gremlin \
 			--namespace gremlin \
 			--set gremlin.secret.name=gremlin-team-cert \
 			--set gremlin.hostPID=true \
@@ -102,6 +110,17 @@ if [ $NO_GREMLIN -eq 0 ]; then
 			--set gremlin.apparmor=unconfined \
 			--set gremlin.container.driver=containerd-runc \
 			--set gremlin.client.tags="cluster=${CLUSTER_NAME}"
+		else
+			helm install gremlin gremlin/gremlin \
+				--namespace gremlin \
+				--set gremlin.secret.name=gremlin-team-cert \
+				--set gremlin.hostPID=true \
+				--set gremlin.collect.processes=true \
+				--set gremlin.apparmor=unconfined \
+				--set gremlin.container.driver=containerd-runc \
+				--set gremlin.client.tags="cluster=${CLUSTER_NAME}" \
+				--set gremlin.serviceUrl=https://api.staging.gremlin.com/v1
+		fi
 
 		# AppArmor workaround (shouldn't be necesary, but just in case)
 		kubectl patch daemonset -n gremlin gremlin -p "{
