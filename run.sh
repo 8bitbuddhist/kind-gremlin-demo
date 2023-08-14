@@ -10,7 +10,7 @@ function usage() {
 	echo "Usage: run.sh [ --no-cluster ] [ --no-gremlin ] [--no-app] [--skaffold] [--staging] [cluster-name]"
 	echo "Options:"
 	echo "	-h | --help	Show this help screen."
-	echo "	--no-app			Don't deploy the Online Boutique demo application."
+	echo "	--no-app	Don't deploy the Online Boutique demo application."
 	echo "  --no-cluster	Don't rebuild the Kind cluster."
 	echo "	--no-gremlin	Don't deploy Gremlin."
 	echo "  --skaffold		Use Skaffold to deploy Online Boutique instead of 'kubectl apply'"
@@ -102,9 +102,10 @@ if [ $NO_GREMLIN -eq 0 ]; then
 		helm repo add gremlin https://helm.gremlin.com
 
 		if [ $USE_STAGING -eq 0 ]; then
-			helm install gremlin gremlin/gremlin \
+		helm install gremlin gremlin/gremlin \
 			--namespace gremlin \
 			--set gremlin.secret.name=gremlin-team-cert \
+			--set gremlin.hostNetwork=true \
 			--set gremlin.hostPID=true \
 			--set gremlin.collect.processes=true \
 			--set gremlin.apparmor=unconfined \
@@ -148,3 +149,7 @@ if [ $NO_APP -eq 0 ]; then
 	fi
 	kubectl apply -f gremlin-boutique-ingress.yaml -n gremlin-boutique
 fi
+
+# Print and save config
+sudo kubectl config view --raw > kubeconfig
+echo "kubectl config saved to \"kubeconfig\"."
