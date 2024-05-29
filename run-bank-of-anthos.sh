@@ -17,8 +17,8 @@ if ! [ -z "$1" ]; then
 fi
 
 # Disable metrics and tracing on all containers to prevent crashes
-kubectl set env rc --all ENABLE_METRICS=false -n bank-of-anthos
-kubectl set env rc --all ENABLE_TRACING=false -n bank-of-anthos
+kubectl set env pod --all ENABLE_METRICS=false -n bank-of-anthos
+kubectl set env pod --all ENABLE_TRACING=false -n bank-of-anthos
 
 echo "Scaling to $scale replicas"
 
