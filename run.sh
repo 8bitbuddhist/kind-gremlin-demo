@@ -64,21 +64,31 @@ if [ -z "$CLUSTER_NAME" ]; then
 	exit
 fi
 
-# Make sure kind and kubectl are installed
-if ! command -v kind &> /dev/null; then
-	echo "Kind not installed. See https://kind.sigs.k8s.io/."
-	exit
-fi
-
+# Make sure kubectl is installed
 if ! command -v kubectl &> /dev/null; then
 	echo "kubectl not installed. See https://kubernetes.io/docs/tasks/tools/."
 	exit
 fi
 
+# Make sure Helm is installed
+if ! command -v helm &> /dev/null; then
+	echo "Helm not installed. See https://helm.sh/."
+	exit
+fi
+
 if [ $NO_CLUSTER -eq 0 ]; then
+	# Make sure kind is installed
+	if ! command -v kind &> /dev/null; then
+		echo "Kind not installed. See https://kind.sigs.k8s.io/."
+		exit
+	fi
 	# Create the kind cluster
 	kind delete cluster --name ${CLUSTER_NAME}
 	kind create cluster --name ${CLUSTER_NAME} --config config.yaml
+
+	# Print and save config
+	sudo kubectl config view --raw > kubeconfig
+	echo "kubectl config saved to \"kubeconfig\"."
 fi
 
 if [ $NO_GREMLIN -eq 0 ]; then
@@ -92,7 +102,8 @@ if [ $NO_GREMLIN -eq 0 ]; then
 		# Create a Gremlin namespace and secret
 		kubectl delete ns gremlin
 		kubectl create ns gremlin
-		kubectl create secret generic -n gremlin gremlin-team-cert \
+		kubectl create secret generic gremlin-team-cert \
+			--namespace=gremlin \
 			--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
 			--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
 			--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
@@ -123,7 +134,7 @@ if [ $NO_GREMLIN -eq 0 ]; then
 				--set gremlin.serviceUrl=https://api.staging.gremlin.com/v1
 		fi
 
-		# AppArmor workaround (shouldn't be necesary, but just in case)
+		# AppArmor workaround (shouldn't be necesary)
 		kubectl patch daemonset -n gremlin gremlin -p "{
 		\"spec\":{
 			\"template\":{
@@ -149,7 +160,3 @@ if [ $NO_APP -eq 0 ]; then
 	fi
 	kubectl apply -f gremlin-boutique-ingress.yaml -n gremlin-boutique
 fi
-
-# Print and save config
-sudo kubectl config view --raw > kubeconfig
-echo "kubectl config saved to \"kubeconfig\"."
