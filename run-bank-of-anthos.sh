@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+kubectl delete ns bank-of-anthos
 kubectl create ns bank-of-anthos
 kubectl apply -f bank-of-anthos/extras/jwt/jwt-secret.yaml -n bank-of-anthos
 kubectl apply -f bank-of-anthos/kubernetes-manifests/ -n bank-of-anthos
@@ -6,7 +7,7 @@ kubectl apply -f bank-of-anthos/kubernetes-manifests/ -n bank-of-anthos
 # Increase user session timeout to one year
 kubectl set env deployment/userservice TOKEN_EXPIRY_SECONDS=31536000 -n bank-of-anthos
 
-# Deploy
+# Deploy ingress controller
 kubectl apply -f bank-of-anthos-ingress.yaml -n bank-of-anthos
 
 # Scale deployments and add annotations so they appear in Gremlin automagically.
@@ -25,11 +26,11 @@ echo "Scaling to $scale replicas"
 deploys=(balancereader contacts frontend ledgerwriter transactionhistory userservice)
 for deploy in "${deploys[@]}"
 do
-	kubectl patch deploy/$deploy --patch '{"spec": {"template": {"spec": {"containers": {"env": [{"name": "ENABLE_METRICS","value": "false"}]}}}}}'
-	kubectl patch deploy/$deploy --patch '{"spec": {"template": {"spec": {"containers": {"env": [{"name": "ENABLE_TRACING","value": "false"}]}}}}}'
+#	kubectl patch deploy/$deploy --patch '{"spec": {"template": {"spec": {"containers": {"env": [{"name": "ENABLE_METRICS","value": "false"}]}}}}}'
+#	kubectl patch deploy/$deploy --patch '{"spec": {"template": {"spec": {"containers": {"env": [{"name": "ENABLE_TRACING","value": "false"}]}}}}}'
 
 	kubectl annotate --overwrite deploy/$deploy gremlin.com/service-id=$deploy -n bank-of-anthos
-	kubectl scale --replicas=2 deploy/$deploy -n bank-of-anthos
+	kubectl scale --replicas=$scale deploy/$deploy -n bank-of-anthos
 done
 
 # Update StatefulSets

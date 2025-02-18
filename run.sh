@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 NO_CLUSTER=0
 NO_GREMLIN=0
 NO_APP=0
@@ -83,69 +83,26 @@ if [ $NO_CLUSTER -eq 0 ]; then
 		exit
 	fi
 	# Create the kind cluster
-	kind delete cluster --name ${CLUSTER_NAME}
-	kind create cluster --name ${CLUSTER_NAME} --config config.yaml
+	sudo kind delete cluster --name ${CLUSTER_NAME}
+	sudo kind create cluster --name ${CLUSTER_NAME} --config config.yaml
+
+	# Increase the host's file limit so we don't get "too many files" errors.
+	# For details, see https://github.com/kubeflow/manifests/issues/2087#issuecomment-1101482095
+	sudo sysctl fs.inotify.max_user_instances=1280
+	sudo sysctl fs.inotify.max_user_watches=655360
 
 	# Print and save config
 	sudo kubectl config view --raw > kubeconfig
-	echo "kubectl config saved to \"kubeconfig\"."
+	cp kubeconfig ~/.kube/config
+	echo "kubectl config saved."
 fi
 
 if [ $NO_GREMLIN -eq 0 ]; then
-	# Detect Gremlin certificate files
-	GREMLIN_CERT_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*cert.pem | head -n 1)
-	GREMLIN_KEY_FILE=$(ls -1 ${GREMLIN_CERT_PATH}/*key.pem | head -n 1)
-
-	if [ -z "$GREMLIN_CERT_FILE" ] || [ -z "$GREMLIN_KEY_FILE" ]; then
-		echo "Could not find Gremlin credentials. Skipping Gremlin setup."
-	else
-		# Create a Gremlin namespace and secret
-		kubectl delete ns gremlin
-		kubectl create ns gremlin
-		kubectl create secret generic gremlin-team-cert \
-			--namespace=gremlin \
-			--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
-			--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
-			--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
-			--from-literal=GREMLIN_CLUSTER_ID=${CLUSTER_NAME}
-
-		# Deploy Gremlin
-		helm repo add gremlin https://helm.gremlin.com
-
-		if [ $USE_STAGING -eq 0 ]; then
-		helm install gremlin gremlin/gremlin \
-			--namespace gremlin \
-			--set gremlin.secret.name=gremlin-team-cert \
-			--set gremlin.hostNetwork=true \
-			--set gremlin.hostPID=true \
-			--set gremlin.collect.processes=true \
-			--set gremlin.apparmor=unconfined \
-			--set gremlin.container.driver=containerd-runc \
-			--set gremlin.client.tags="cluster=${CLUSTER_NAME}"
-		else
-			helm install gremlin gremlin/gremlin \
-				--namespace gremlin \
-				--set gremlin.secret.name=gremlin-team-cert \
-				--set gremlin.hostPID=true \
-				--set gremlin.collect.processes=true \
-				--set gremlin.apparmor=unconfined \
-				--set gremlin.container.driver=containerd-runc \
-				--set gremlin.client.tags="cluster=${CLUSTER_NAME}" \
-				--set gremlin.serviceUrl=https://api.staging.gremlin.com/v1
-		fi
-
-		# AppArmor workaround (shouldn't be necesary)
-		kubectl patch daemonset -n gremlin gremlin -p "{
-		\"spec\":{
-			\"template\":{
-				\"metadata\":{
-					\"annotations\":{
-						\"container.apparmor.security.beta.kubernetes.io/gremlin\":\"unconfined\"}}}}}"
-	fi
+	./run-gremlin.sh
 fi
 
 # Deploy an Nginx Ingress controller and wait for it to rollout
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
 kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
