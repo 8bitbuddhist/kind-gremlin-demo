@@ -17,7 +17,8 @@ else
 		--from-file=gremlin.cert=${GREMLIN_CERT_FILE} \
 		--from-file=gremlin.key=${GREMLIN_KEY_FILE} \
 		--from-literal=GREMLIN_TEAM_ID=${GREMLIN_TEAM_ID} \
-		--from-literal=GREMLIN_CLUSTER_ID=${CLUSTER_NAME}
+		--from-literal=GREMLIN_CLUSTER_ID=${CLUSTER_NAME} \
+		--from-literal=GREMLIN_CLIENT_TAGS="cluster=${CLUSTER_NAME},os-name=Debian,os-type=Linux"
 
 	# Deploy Gremlin
 	helm repo add gremlin https://helm.gremlin.com
@@ -28,7 +29,7 @@ else
 		--set gremlin.collect.processes=true \
 		--set gremlin.apparmor=unconfined \
 		--set gremlin.container.driver=containerd-linux \
-		--set gremlin.client.tags="cluster=${CLUSTER_NAME}"
+		--set gremlin.client.tags="cluster=${CLUSTER_NAME},os-name=Debian,os-type=Linux"
 
 	# AppArmor workaround (shouldn't be necesary)
     kubectl patch daemonset -n gremlin gremlin -p "{                                                                                                  \"spec\":{                                                                                                                                            \"template\":{                                                                                                                                        \"metadata\":{                                                                                                                                        \"annotations\":{

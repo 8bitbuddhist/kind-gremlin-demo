@@ -107,13 +107,5 @@ kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
 if [ $NO_APP -eq 0 ]; then
-	kubectl create ns gremlin-boutique
-	if [ $USE_SKAFFOLD -eq 1 ]; then
-		cd gremlin-boutique
-		skaffold run --namespace gremlin-boutique
-		cd ..
-	else
-		kubectl apply -f gremlin-boutique/release/kubernetes-manifests.yaml -n gremlin-boutique
-	fi
-	kubectl apply -f gremlin-boutique-ingress.yaml -n gremlin-boutique
+	./run-bank-of-anthos.sh
 fi
