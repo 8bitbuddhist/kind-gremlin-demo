@@ -1,7 +1,3 @@
-[submodule "gremlin-boutique"]
-	path = gremlin-boutique
-	url = https://github.com/8bitbuddhist/microservices-demo.git
-	branch = release/v0.3.5
 [submodule "bank-of-anthos"]
 	path = bank-of-anthos
 	url = https://github.com/GoogleCloudPlatform/bank-of-anthos.git

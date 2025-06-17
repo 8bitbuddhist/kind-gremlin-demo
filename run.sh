@@ -2,19 +2,18 @@
 NO_CLUSTER=0
 NO_GREMLIN=0
 NO_APP=0
-APP_VERSION=v0.3.5	# Online Boutique version number
 USE_SKAFFOLD=0
-USE_STAGING=0		# Deploy to Gremlin staging instead of prod
+USE_STAGING=0
 
 function usage() {
 	echo "Usage: run.sh [ --no-cluster ] [ --no-gremlin ] [--no-app] [--skaffold] [--staging] [cluster-name]"
 	echo "Options:"
 	echo "	-h | --help	Show this help screen."
-	echo "	--no-app	Don't deploy the Online Boutique demo application."
+	echo "	--no-app		Don't deploy the Bank of Anthos demo application."
 	echo "  --no-cluster	Don't rebuild the Kind cluster."
 	echo "	--no-gremlin	Don't deploy Gremlin."
-	echo "  --skaffold		Use Skaffold to deploy Online Boutique instead of 'kubectl apply'"
-	echo "  --staging			Deploy to Gremlin Staging instead of Gremlin Prod"
+	echo "  --skaffold		Use Skaffold to deploy Bank of Anthos instead of using existing images."
+	echo "  --staging		Deploy to Gremlin Staging instead of Gremlin Prod"
 	echo "  cluster-name	The name of the cluster to create."
 	exit 2
 }
@@ -82,6 +81,7 @@ if [ $NO_CLUSTER -eq 0 ]; then
 		echo "Kind not installed. See https://kind.sigs.k8s.io/."
 		exit
 	fi
+	
 	# Create the kind cluster
 	sudo kind delete cluster --name ${CLUSTER_NAME}
 	sudo kind create cluster --name ${CLUSTER_NAME} --config config.yaml
@@ -91,19 +91,19 @@ if [ $NO_CLUSTER -eq 0 ]; then
 	sudo sysctl fs.inotify.max_user_instances=1280
 	sudo sysctl fs.inotify.max_user_watches=655360
 
-	# Print and save config
+	# Print and save config, then add
 	sudo kubectl config view --raw > kubeconfig
-	cp kubeconfig ~/.kube/config
+	cp kubeconfig $HOME/.kube/kind-gremlin-demo-config
+	if [[ $KUBECONFIG != *"$HOME/.kube/kind-gremlin-demo-config"* ]]; then
+		$KUBECONFIG=$KUBECONFIG:$HOME/.kube/kind-gremlin-demo-config
+	fi
+
 	echo "kubectl config saved."
 fi
 
 if [ $NO_GREMLIN -eq 0 ]; then
 	./run-gremlin.sh
 fi
-
-# Deploy an Nginx Ingress controller and wait for it to rollout
-kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
-kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 
 # Deploy the demo application
 if [ $NO_APP -eq 0 ]; then
