@@ -16,5 +16,6 @@ else
 		--namespace gremlin \
 		--values $GREMLIN_CONFIG_FILE_PATH \
 		--set gremlin.container.driver=containerd-linux \
-		--set gremlin.client.tags="cluster=${CLUSTER_NAME},os-name=Debian,os-type=Linux"
+		--set gremlin.secret.clusterID=${CLUSTER_NAME}
+		--set gremlin.client.tags="os-name=Debian,os-type=Linux,app=gremlin-lab"
 fi

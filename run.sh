@@ -92,10 +92,9 @@ if [ $NO_CLUSTER -eq 0 ]; then
 	sudo sysctl fs.inotify.max_user_watches=655360
 
 	# Print and save config, then add
-	sudo kubectl config view --raw > kubeconfig
-	cp kubeconfig $HOME/.kube/kind-gremlin-demo-config
-	if [[ $KUBECONFIG != *"$HOME/.kube/kind-gremlin-demo-config"* ]]; then
-		$KUBECONFIG=$KUBECONFIG:$HOME/.kube/kind-gremlin-demo-config
+	sudo kubectl config view --raw > kind-gremlin-demo-kubeconfig
+	if [[ $KUBECONFIG != *"kind-gremlin-demo-kubeconfig"* ]]; then
+		export KUBECONFIG=${KUBECONFIG}:kind-gremlin-demo-config
 	fi
 
 	echo "kubectl config saved."
