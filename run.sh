@@ -94,7 +94,7 @@ if [ $NO_CLUSTER -eq 0 ]; then
 	# Print and save config, then add
 	sudo kubectl config view --raw > kind-gremlin-demo-kubeconfig
 	if [[ $KUBECONFIG != *"kind-gremlin-demo-kubeconfig"* ]]; then
-		export KUBECONFIG=${KUBECONFIG}:kind-gremlin-demo-config
+		export KUBECONFIG=${KUBECONFIG}:kind-gremlin-demo-kubeconfig
 	fi
 
 	echo "kubectl config saved."
